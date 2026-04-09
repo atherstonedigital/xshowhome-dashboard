@@ -57,7 +57,7 @@ export function fetchGoogleAds(dateFrom, dateTo) {
     date_to: formatDate(dateTo),
     fields: [
       'date', 'campaign', 'campaign_type', 'spend', 'clicks',
-      'impressions', 'conversions', 'conv_value', 'ctr', 'cpc',
+      'impressions', 'conversions', 'conversion_value', 'ctr', 'cpc',
     ],
   });
 }
@@ -148,7 +148,7 @@ export function aggregateGoogleAds(rows) {
   const clicks = sumField(rows, 'clicks');
   const impressions = sumField(rows, 'impressions');
   const conversions = sumField(rows, 'conversions');
-  const convValue = sumField(rows, 'conv_value');
+  const convValue = sumField(rows, 'conversion_value');
   const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
   const cpc = clicks > 0 ? spend / clicks : 0;
   const roas = spend > 0 ? convValue / spend : 0;
@@ -165,7 +165,7 @@ export function buildGoogleAdsCampaigns(rows) {
       map[name] = { campaign: name, type: r.campaign_type || '', spend: 0, revenue: 0, clicks: 0, impressions: 0, conversions: 0 };
     }
     map[name].spend += num(r.spend);
-    map[name].revenue += num(r.conv_value);
+    map[name].revenue += num(r.conversion_value);
     map[name].clicks += num(r.clicks);
     map[name].impressions += num(r.impressions);
     map[name].conversions += num(r.conversions);
