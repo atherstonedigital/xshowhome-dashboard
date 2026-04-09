@@ -21,9 +21,13 @@ async function queryWindsor(params) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
   });
-  if (!res.ok) throw new Error(`Windsor API error: ${res.status}`);
   const json = await res.json();
-  return json.data || [];
+  if (json.error) {
+    console.warn(`Windsor [${params.connector}]:`, json.error);
+  }
+  const rows = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+  console.log(`Windsor [${params.connector}]: ${rows.length} rows`);
+  return rows;
 }
 
 export function fetchShopify(dateFrom, dateTo) {

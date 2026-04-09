@@ -15,7 +15,7 @@ export default async (req) => {
     return Response.json({ error: 'Method not allowed' }, { status: 405 });
   }
 
-  const apiKey = Netlify.env.get('WINDSOR_API_KEY');
+  const apiKey = process.env.WINDSOR_API_KEY;
   if (!apiKey) {
     return Response.json({ error: 'Windsor API key not configured' }, { status: 500 });
   }
@@ -38,16 +38,33 @@ export default async (req) => {
 
     const url = `https://connectors.windsor.ai/all?${params.toString()}`;
     const response = await fetch(url);
-    const data = await response.json();
+    const text = await response.text();
 
-    return Response.json(data, {
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return Response.json({ error: 'Invalid response from Windsor', raw: text.slice(0, 500) }, { status: 502 });
+    }
+
+    // Windsor may return { data: [...] } or just [...] or { error: ... }
+    if (data.error) {
+      return Response.json({ error: data.error, data: [] }, {
+        status: 200,
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      });
+    }
+
+    // Normalize: always return { data: [...] }
+    const rows = Array.isArray(data) ? data : (data.data || []);
+    return Response.json({ data: rows }, {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'public, max-age=300',
       },
     });
   } catch (err) {
-    return Response.json({ error: err.message }, { status: 500 });
+    return Response.json({ error: err.message, data: [] }, { status: 500 });
   }
 };
 
