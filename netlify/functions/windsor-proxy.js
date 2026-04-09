@@ -34,7 +34,7 @@ export default async (req) => {
     if (date_filters) params.set('date_filters', JSON.stringify(date_filters));
     if (filters) params.set('filters', JSON.stringify(filters));
 
-    const url = `https://connectors.windsor.ai/${connector}?${apiKey}&${params.toString()}`;
+    const url = `https://connectors.windsor.ai/${connector}?api_key=${apiKey}&${params.toString()}`;
     const response = await fetch(url);
     const text = await response.text();
 
