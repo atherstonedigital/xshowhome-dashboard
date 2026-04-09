@@ -47,9 +47,14 @@ export default async (req) => {
       return Response.json({ error: 'Invalid response from Windsor', raw: text.slice(0, 500) }, { status: 502 });
     }
 
+    // Include debug info so frontend can log what Windsor actually returned
+    const debugUrl = url.replace(apiKey, 'REDACTED');
+    const debugKeys = typeof data === 'object' && data !== null ? Object.keys(data) : [];
+    const debugSample = JSON.stringify(data).slice(0, 300);
+
     // Windsor may return { data: [...] } or just [...] or { error: ... }
     if (data.error) {
-      return Response.json({ error: data.error, data: [] }, {
+      return Response.json({ error: data.error, data: [], _debug: { url: debugUrl, keys: debugKeys, sample: debugSample, status: response.status } }, {
         status: 200,
         headers: { 'Access-Control-Allow-Origin': '*' },
       });
@@ -57,7 +62,7 @@ export default async (req) => {
 
     // Normalize: always return { data: [...] }
     const rows = Array.isArray(data) ? data : (data.data || []);
-    return Response.json({ data: rows }, {
+    return Response.json({ data: rows, _debug: { url: debugUrl, keys: debugKeys, rowCount: rows.length, sample: debugSample, status: response.status } }, {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'public, max-age=300',

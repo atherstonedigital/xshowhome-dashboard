@@ -22,8 +22,11 @@ async function queryWindsor(params) {
     body: JSON.stringify(params),
   });
   const json = await res.json();
+  if (json._debug) {
+    console.log(`Windsor [${params.connector}] debug:`, json._debug);
+  }
   if (json.error) {
-    console.warn(`Windsor [${params.connector}]:`, json.error);
+    console.warn(`Windsor [${params.connector}] error:`, json.error);
   }
   const rows = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
   console.log(`Windsor [${params.connector}]: ${rows.length} rows`);
