@@ -25,9 +25,7 @@ export default async (req) => {
     const { connector, fields, accounts, date_from, date_to, date_preset, date_filters, filters } = body;
 
     const params = new URLSearchParams();
-    params.set('api_key', apiKey);
 
-    if (connector) params.set('connector', connector);
     if (fields && fields.length) params.set('fields', fields.join(','));
     if (accounts && accounts.length) params.set('accounts', accounts.join(','));
     if (date_from) params.set('date_from', date_from);
@@ -36,7 +34,7 @@ export default async (req) => {
     if (date_filters) params.set('date_filters', JSON.stringify(date_filters));
     if (filters) params.set('filters', JSON.stringify(filters));
 
-    const url = `https://connectors.windsor.ai/all?${params.toString()}`;
+    const url = `https://connectors.windsor.ai/${connector}?${apiKey}&${params.toString()}`;
     const response = await fetch(url);
     const text = await response.text();
 
@@ -61,7 +59,7 @@ export default async (req) => {
     }
 
     // Normalize: always return { data: [...] }
-    const rows = Array.isArray(data) ? data : (data.data || []);
+    const rows = Array.isArray(data) ? data : (data.result || data.data || []);
     return Response.json({ data: rows, _debug: { url: debugUrl, keys: debugKeys, rowCount: rows.length, sample: debugSample, status: response.status } }, {
       headers: {
         'Access-Control-Allow-Origin': '*',
